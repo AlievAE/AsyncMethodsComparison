@@ -1,0 +1,71 @@
+# 4/5 and 5/5: LogReg (a9a) — two "bigger" experiments.
+
+dataset:
+  name: a9a
+
+optimization:
+  learning_rate: 0.25
+  max_time: 300
+  lambda_reg: 0.01
+
+# Disable the small ones in this config.
+experiment_homogeneous: {enabled: false}
+experiment_heterogeneous: {enabled: false}
+experiment_stochastic: {enabled: false}
+experiment_batch_size: {enabled: false}
+experiment_compression: {enabled: false}
+experiment_compression_hetero: {enabled: false}
+
+experiment_dominance:
+  enabled: true
+  methods: [AsynchronousGD, AsynchronousNAG, RennalaSGD]
+  n_workers: 32
+  rennala_batch_size: 8
+  # Mixture of worker speeds (heavy straggler tail).
+  worker_times:
+    # 24 fast
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    # 6 medium
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 5.0}
+    # 2 heavy stragglers
+    - {type: exponential, scale: 25.0}
+    - {type: exponential, scale: 80.0}
+
+experiment_scalability:
+  enabled: true
+  worker_counts: [4, 8, 16, 32]
+  time_distribution: {type: exponential, scale: 1.0}
+  # Include Rennala and NAG in scalability too.
+  methods: [MinibatchSGD, AsynchronousGD, AsynchronousNAG, RennalaSGD]
+  # For Rennala: fastest 25% of workers at each scale.
+  rennala_batch_size_fraction: 0.25
+
+

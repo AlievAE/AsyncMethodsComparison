@@ -1,0 +1,39 @@
+# NAG-Friendly Experiment (LogReg on a9a)
+# ----------------------------------------
+# Goal: Setup where Asynchronous NAG can demonstrate its acceleration advantage.
+#
+# Key factors:
+# - Homogeneous workers → minimal staleness
+# - Conservative learning rate → stable momentum accumulation
+# - Moderate momentum (0.7) → acceleration without instability
+# - More workers → more parallelism, but still low staleness
+
+dataset:
+  name: a9a
+
+optimization:
+  learning_rate: 0.05  # conservative — lets momentum do the acceleration
+  max_time: 800        # longer run to see acceleration benefits
+  lambda_reg: 0.01
+
+# Disable all other experiments
+experiment_heterogeneous: {enabled: false}
+experiment_stochastic: {enabled: false}
+experiment_batch_size: {enabled: false}
+experiment_compression: {enabled: false}
+experiment_compression_hetero: {enabled: false}
+experiment_scalability: {enabled: false}
+experiment_dominance: {enabled: false}
+
+experiment_homogeneous:
+  enabled: true
+  n_workers: 4         # fewer workers = less intra-batch staleness for Async methods
+  time_distribution: {type: constant, value: 1.0}
+  rennala_batch_size: 2
+  nag_momentum: 0.7    # higher momentum to showcase acceleration (safe with low staleness)
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+

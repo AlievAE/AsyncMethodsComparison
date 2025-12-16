@@ -1,0 +1,27 @@
+# 1/5: LinReg (Diabetes) — quick sanity run to show everything works.
+
+dataset:
+  name: diabetes
+
+optimization:
+  learning_rate: 0.01
+  max_time: 200
+  lambda_reg: 0.1
+
+experiment_homogeneous:
+  enabled: true
+  n_workers: 4
+  time_distribution: {type: constant, value: 1.0}
+  nag_momentum: 0.5  # homogeneous workers → moderate staleness → safe momentum
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+
+experiment_heterogeneous: {enabled: false}
+experiment_stochastic: {enabled: false}
+experiment_batch_size: {enabled: false}
+experiment_compression: {enabled: false}
+experiment_compression_hetero: {enabled: false}
+

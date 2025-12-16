@@ -1,0 +1,106 @@
+# Logistic Regression Experiments on a9a Dataset
+# ===============================================
+
+dataset:
+  name: a9a
+  # a9a: n=32561, d=123
+
+optimization:
+  learning_rate: 0.1
+  max_time: 300  # Run until simulated time reaches this value (fair comparison across methods)
+  lambda_reg: 0.01  # L2 regularization
+
+# Experiment 1: Sync vs Async under Homogeneous Workers
+experiment_homogeneous:
+  enabled: true
+  n_workers: 4
+  time_distribution:
+    type: constant
+    value: 1.0
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+
+# Experiment 2: Heterogeneous Workers (Stragglers)
+experiment_heterogeneous:
+  enabled: true
+  n_workers: 4
+  worker_times:
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 10.0}
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+
+# Experiment 3: Stochastic Heterogeneity
+experiment_stochastic:
+  enabled: true
+  n_workers: 4
+  worker_times:
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 2.0}
+    - {type: exponential, scale: 5.0}
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+
+# Experiment 4: RennalaSGD Batch Size Sweep
+experiment_batch_size:
+  enabled: true
+  n_workers: 8
+  time_distribution:
+    type: exponential
+    scale: 1.0
+  batch_sizes: [1, 2, 3, 4, 5, 6, 7, 8]
+
+# Experiment 5: Compression Comparison
+experiment_compression:
+  enabled: true
+  n_workers: 4
+  time_distribution:
+    type: constant
+    value: 1.0
+  method: AsynchronousGD
+  compression_types:
+    - {flag: none, k: null}
+    - {flag: randk, k: 30}
+    - {flag: randk, k: 60}
+    - {flag: topk, k: 30}
+    - {flag: topk, k: 60}
+
+# Experiment 6: Compression under Heterogeneity
+experiment_compression_hetero:
+  enabled: true
+  n_workers: 4
+  worker_times:
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 5.0}
+  method: AsynchronousGD
+  compression_types:
+    - {flag: none, k: null}
+    - {flag: randk, k: 30}
+    - {flag: topk, k: 30}
+
+# Experiment 7: Scalability (Number of Workers)
+experiment_scalability:
+  enabled: true
+  worker_counts: [2, 4, 8, 16]
+  time_distribution:
+    type: exponential
+    scale: 1.0
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+

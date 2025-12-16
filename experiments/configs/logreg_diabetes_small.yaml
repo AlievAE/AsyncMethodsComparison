@@ -1,0 +1,45 @@
+# 2/5 and 3/5: LogReg (Diabetes binary) — two small experiments.
+
+dataset:
+  name: diabetes_binary
+  threshold: median
+
+optimization:
+  learning_rate: 0.2
+  max_time: 200
+  lambda_reg: 0.01
+
+experiment_homogeneous:
+  enabled: true
+  n_workers: 4
+  time_distribution: {type: constant, value: 1.0}
+  # Use fastest-k to keep Rennala distinct even on a small dataset.
+  rennala_batch_size: 2
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+
+experiment_heterogeneous:
+  enabled: true
+  n_workers: 4
+  worker_times:
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 1.0}
+    - {type: constant, value: 10.0}
+  rennala_batch_size: 2
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+
+experiment_stochastic: {enabled: false}
+experiment_batch_size: {enabled: false}
+experiment_compression: {enabled: false}
+experiment_compression_hetero: {enabled: false}
+experiment_scalability: {enabled: false}
+experiment_dominance: {enabled: false}
+

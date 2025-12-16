@@ -1,0 +1,39 @@
+# AsyncGD Showcase on Linear Regression (Diabetes)
+# -------------------------------------------------
+# Goal: Demonstrate where AsyncGD shines — many fast updates without waiting for stragglers.
+#
+# Setup: Mild heterogeneity where:
+# - MinibatchSGD pays the "wait for slowest" penalty
+# - AsyncGD benefits from fast workers delivering updates quickly
+# - Staleness is mild enough that AsyncGD doesn't diverge
+
+dataset:
+  name: diabetes
+
+optimization:
+  learning_rate: 0.01  # conservative for stability
+  max_time: 300
+  lambda_reg: 0.1
+
+# Disable all other experiments
+experiment_heterogeneous: {enabled: false}
+experiment_stochastic: {enabled: false}
+experiment_batch_size: {enabled: false}
+experiment_compression: {enabled: false}
+experiment_compression_hetero: {enabled: false}
+
+experiment_homogeneous:
+  enabled: true
+  n_workers: 6
+  # Mild heterogeneity: most workers fast, one moderately slow
+  # This is actually using experiment_homogeneous but we'll use stochastic times
+  # to create natural variation without extreme stragglers
+  time_distribution: {type: exponential, scale: 1.0}  # natural variation, mean=1
+  rennala_batch_size: 3
+  nag_momentum: 0.5
+  methods:
+    - MinibatchSGD
+    - AsynchronousGD
+    - AsynchronousNAG
+    - RennalaSGD
+

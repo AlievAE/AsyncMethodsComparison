@@ -1,0 +1,54 @@
+# Rennala vs Async "Dominance" Setup (LogReg on a9a)
+# --------------------------------------------------
+# Goal: make staleness + stragglers hurt AsynchronousGD, while RennalaSGD stays stable by
+# using fresh gradients averaged over the fastest-k workers (k < n_workers).
+
+dataset:
+  name: a9a
+
+optimization:
+  # Aggressive LR makes stale-gradient updates noticeably worse.
+  # If Async diverges too hard, reduce to 0.15–0.2; if curves are too similar, try 0.3.
+  learning_rate: 0.25
+  max_time: 1000
+  lambda_reg: 0.01
+
+# Keep the standard experiments off so the run is focused.
+experiment_homogeneous: {enabled: false}
+experiment_heterogeneous: {enabled: false}
+experiment_stochastic: {enabled: false}
+experiment_batch_size: {enabled: false}
+experiment_compression: {enabled: false}
+experiment_compression_hetero: {enabled: false}
+experiment_scalability: {enabled: false}
+
+experiment_dominance:
+  enabled: true
+  methods: [MinibatchSGD, AsynchronousGD, AsynchronousNAG, RennalaSGD]
+  n_workers: 16
+
+  # Rennala waits for the fastest-k workers each update (k < n_workers).
+  # Typical good values: n/4 or n/2. Too small increases noise; too large starts waiting for stragglers.
+  rennala_batch_size: 4
+
+  # Heavy-tailed / straggler-prone compute times: most workers fast, a few slow, one very slow.
+  # This maximizes staleness for AsynchronousGD and highlights Rennala's "fresh fastest-k" behavior.
+  worker_times:
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.0}
+    - {type: exponential, scale: 1.5}
+    - {type: exponential, scale: 1.5}
+    - {type: exponential, scale: 2.0}
+    - {type: exponential, scale: 2.0}
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 5.0}
+    - {type: exponential, scale: 15.0}
+    - {type: exponential, scale: 50.0}
+
+
